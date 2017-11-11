@@ -1,6 +1,8 @@
 package sample;
 
 import javafx.application.Application;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
@@ -9,6 +11,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
@@ -42,6 +45,8 @@ public class Main extends Application {
     private TextField widthTF;
     private TextField heightTF;
     private TextField titleTF;
+
+    private ListView<File> filesListView;
 
     @Override
     public void start(Stage primaryStage) throws Exception{
@@ -97,11 +102,14 @@ public class Main extends Application {
         titleTF = new TextField();
         grid.add(titleTF, 1, 4);
 
+        filesListView = new ListView<>();
+        grid.add(filesListView, 0, 5, 2, 2);
+
         Button convert = new Button("Convert");
         convert.setOnAction(e -> {
             convertFiles();
         });
-        grid.add(convert, 1, 5);
+        grid.add(convert, 0, 7);
 
         primaryStage.setScene(new Scene(grid, 400, 300));
         primaryStage.show();
@@ -127,6 +135,9 @@ public class Main extends Application {
                     success = true;
 
                     mFilesList = db.getFiles();
+
+                    ObservableList<File> items = FXCollections.observableArrayList (mFilesList);
+                    filesListView.setItems(items);
                 }
 
                 event.setDropCompleted(success);
