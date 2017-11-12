@@ -3,17 +3,13 @@ package sample;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.event.EventHandler;
-import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
-import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.GridPane;
@@ -47,11 +43,56 @@ public class Main extends Application {
 
     private ListView<File> filesListView;
 
+    private String converter;
+
     @Override
     public void start(Stage primaryStage) throws Exception{
-        Parent root = FXMLLoader.load(getClass().getResource("sample.fxml"));
-        primaryStage.setTitle("ffmpegConverter");
+        String OS = System.getProperty("os.name").toLowerCase();
+        if (OS.contains("win")) {
+            converter =  "ffmpeg.exe";
+        } else if (OS.contains("mac")) {
+            converter = "./ffmpeg";
+        } else {
+            throw new Error("Your OS is not support!!");
+        }
 
+        GridPane grid = initUI();
+
+        primaryStage.setScene(new Scene(grid, 400, 300));
+        primaryStage.setTitle("ffmpegConverter");
+        initDragEvents(grid);
+
+        primaryStage.show();
+    }
+
+    private void initDragEvents(GridPane grid) {
+        grid.setOnDragOver(event -> {
+            if (event.getGestureSource() != grid
+                    && event.getDragboard().hasFiles()) {
+                event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
+            }
+            event.consume();
+        });
+
+        grid.setOnDragDropped(event -> {
+            Dragboard db = event.getDragboard();
+            boolean success = false;
+
+            if (db.hasFiles()) {
+                success = true;
+
+                mFilesList = db.getFiles();
+
+                ObservableList<File> items = FXCollections.observableArrayList (mFilesList);
+                filesListView.setItems(items);
+            }
+
+            event.setDropCompleted(success);
+            event.consume();
+        });
+    }
+
+    private GridPane initUI() {
         GridPane grid = new GridPane();
         grid.setAlignment(Pos.CENTER);
         grid.setHgap(10);
@@ -110,52 +151,10 @@ public class Main extends Application {
         });
         grid.add(convert, 0, 7);
 
-        primaryStage.setScene(new Scene(grid, 400, 300));
-        primaryStage.show();
-
-        grid.setOnDragOver(new EventHandler<DragEvent>() {
-            @Override
-            public void handle(DragEvent event) {
-                if (event.getGestureSource() != root
-                        && event.getDragboard().hasFiles()) {
-                    event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
-                }
-                event.consume();
-            }
-        });
-
-        grid.setOnDragDropped(new EventHandler<DragEvent>() {
-            @Override
-            public void handle(DragEvent event) {
-                Dragboard db = event.getDragboard();
-                boolean success = false;
-
-                if (db.hasFiles()) {
-                    success = true;
-
-                    mFilesList = db.getFiles();
-
-                    ObservableList<File> items = FXCollections.observableArrayList (mFilesList);
-                    filesListView.setItems(items);
-                }
-
-                event.setDropCompleted(success);
-                event.consume();
-            }
-        });
+        return grid;
     }
 
     private void convertFiles() {
-        String converter;
-        String OS = System.getProperty("os.name").toLowerCase();
-        if (OS.contains("win")) {
-            converter =  "ffmpeg.exe";
-        } else if (OS.contains("mac")) {
-            converter = "./ffmpeg";
-        } else {
-            throw new Error("Your OS is not support!!");
-        }
-
         if (!fpsTF.getText().equals(""))
             mFPS = Integer.parseInt(fpsTF.getText());
 
