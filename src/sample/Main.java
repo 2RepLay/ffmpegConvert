@@ -22,10 +22,9 @@ import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -69,7 +68,7 @@ public class Main extends Application {
         fpsTF = new TextField();
         fpsTF.textProperty().addListener((observable, oldValue, newValue) -> {
             if (!newValue.matches("\\d*")) {
-            fpsTF.setText(newValue.replaceAll("[^\\d]", ""));
+                fpsTF.setText(newValue.replaceAll("[^\\d]", ""));
             }
         });
         grid.add(fpsTF, 1, 1);
@@ -147,6 +146,16 @@ public class Main extends Application {
     }
 
     private void convertFiles() {
+        String converter;
+        String OS = System.getProperty("os.name").toLowerCase();
+        if (OS.contains("win")) {
+            converter =  "ffmpeg.exe";
+        } else if (OS.contains("mac")) {
+            converter = "./ffmpeg";
+        } else {
+            throw new Error("Your OS is not support!!");
+        }
+
         if (!fpsTF.getText().equals(""))
             mFPS = Integer.parseInt(fpsTF.getText());
 
@@ -166,50 +175,82 @@ public class Main extends Application {
                 mPaletteLocation = file.getAbsolutePath().replace(file.getName(), "palette.png");
 
                 /* увы, так не работает */
-//                ProcessBuilder createPaletteBuilder = new ProcessBuilder();
-//                createPaletteBuilder.command("ffmpeg.exe -y");
-//                createPaletteBuilder.command("-i " + file.getAbsolutePath());
-//                createPaletteBuilder.command("-vf fps=", String.valueOf(mFPS), ",scale=", mWidth + ":" + mHeight, ":flags=lanczos,palettegen");
-//                createPaletteBuilder.command(mPaletteLocation);
-//                Process createPalette = createPaletteBuilder.start();
+                try{
+                    ProcessBuilder createPaletteBuilder = new ProcessBuilder();
+                    createPaletteBuilder.command(
+                            converter,
+                            "-i",
+                            "" + file.getAbsolutePath() + "",
+                            "-y",
+                            "-vf",
+                            "palettegen",
+                            mPaletteLocation);
+                    Process createPalette = createPaletteBuilder.start();
+                    result_code = createPalette.waitFor();
+
+                    if (result_code != 0) {
+                        return;
+                    }
+                } catch (Throwable t) {
+                    t.printStackTrace();
+                }
 
                 /* никогда так не делай */
-                Process createPalette = Runtime.getRuntime().exec("ffmpeg.exe -y -i " + file.getAbsolutePath() + " -vf fps=" + mFPS + ",scale=" + mWidth + ":" + mHeight + ":flags=lanczos,palettegen "  + mPaletteLocation);
-                result_code = createPalette.waitFor();
-
-                if (result_code != 0) {
-                    return;
-                }
+                // Process createPalette = Runtime.getRuntime().exec("ffmpeg.exe -y -i " + file.getAbsolutePath() + " -vf fps=" + mFPS + ",scale=" + mWidth + ":" + mHeight + ":flags=lanczos,palettegen "  + mPaletteLocation);
 
                 if (mFilesList.size() > 1) {
                     mNewTitle = mNewTitle.concat(String.valueOf(mFilesList.indexOf(file)));
                 }
 
+                File f = new File(file.getAbsolutePath().replace(file.getName(), mNewTitle + ".gif"));
+                if(f.exists() && !f.isDirectory()) {
+                    String time = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH.mm.ss"));
+                    mNewTitle = String.format("%s_%s", mNewTitle, time);
+                }
+
                 /* увы, и так тоже не работает */
-//                ProcessBuilder createGifBuilder = new ProcessBuilder();
-//                createGifBuilder.command("ffmpeg.exe");
-//                createGifBuilder.command("-i " + file.getAbsolutePath());
-//                createGifBuilder.command("-i " + mPaletteLocation);
-//                createGifBuilder.command("-filter_complex fps=", String.valueOf(mFPS), ",scale=", mWidth + ":" + mHeight, ":flags=lanczos[x];[x][1:v]paletteuse");
-//                createGifBuilder.command(file.getAbsolutePath().replace(file.getName(), mNewTitle));
-//                Process createGif = createGifBuilder.start();
+                try{
+                    ProcessBuilder createPaletteBuilder = new ProcessBuilder();
+                    createPaletteBuilder.command(
+                            converter,
+                            "-n",
+                            "-i",
+                            "" + file.getAbsolutePath() + "",
+                            "-i",
+                            mPaletteLocation,
+                            "-filter_complex",
+                            "fps=" + mFPS + ",scale=" + mWidth + ":" + mHeight + ":flags=lanczos[x];[x][1:v]paletteuse ",
+                            file.getAbsolutePath().replace(file.getName(), mNewTitle + ".gif")
+                    );
+                    Process createGif = createPaletteBuilder.start();
 
-                /* а так уж и подавно не делай */
-                Process createGif = Runtime.getRuntime().exec("ffmpeg.exe -i " + file.getAbsolutePath() + " -i " + mPaletteLocation + " -filter_complex fps=" + mFPS + ",scale=" + mWidth + ":" + mHeight + ":flags=lanczos[x];[x][1:v]paletteuse " + file.getAbsolutePath().replace(file.getName(), mNewTitle + ".gif"));
-                BufferedReader stdError = new BufferedReader(new
-                        InputStreamReader(createGif.getErrorStream()));
+                    /* а так уж и подавно не делай */
+                    // Process createGif = Runtime.getRuntime().exec("ffmpeg.exe -i " + file.getAbsolutePath() + " -i " + mPaletteLocation + " -filter_complex fps=" + mFPS + ",scale=" + mWidth + ":" + mHeight + ":flags=lanczos[x];[x][1:v]paletteuse " + file.getAbsolutePath().replace(file.getName(), mNewTitle + ".gif"));
+                    BufferedReader stdError = new BufferedReader(new
+                            InputStreamReader(createGif.getErrorStream()));
 
-                String s = null;
-                while ((s = stdError.readLine()) != null) {
-                    System.out.println(s);
+                    String s;
+                    while ((s = stdError.readLine()) != null) {
+                        System.out.println(s);
+                    }
+
+                    result_code = createGif.waitFor();
+
+                    if (result_code != 0) {
+                        return;
+                    }
+
+                    mNewTitle = "output";
+                    File palette = new File(mPaletteLocation);
+                    if(palette.delete()) {
+                        System.out.println(palette.getName() + " was deleted!");
+                    } else {
+                        System.out.println("Delete operation is failed.");
+                    }
+                } catch (Throwable t) {
+                    t.printStackTrace();
                 }
-
-                result_code = createGif.waitFor();
-
-                if (result_code != 0) {
-                    return;
-                }
-            } catch (IOException | InterruptedException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
