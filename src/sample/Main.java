@@ -46,10 +46,10 @@ public class Main extends Application {
     private String converter;
 
     @Override
-    public void start(Stage primaryStage) throws Exception{
+    public void start(Stage primaryStage) throws Exception {
         String OS = System.getProperty("os.name").toLowerCase();
         if (OS.contains("win")) {
-            converter =  "ffmpeg.exe";
+            converter = "ffmpeg.exe";
         } else if (OS.contains("mac")) {
             converter = "./ffmpeg";
         } else {
@@ -83,7 +83,7 @@ public class Main extends Application {
 
                 mFilesList = db.getFiles();
 
-                ObservableList<File> items = FXCollections.observableArrayList (mFilesList);
+                ObservableList<File> items = FXCollections.observableArrayList(mFilesList);
                 filesListView.setItems(items);
             }
 
@@ -157,24 +157,28 @@ public class Main extends Application {
     private void convertFiles() {
         if (!fpsTF.getText().equals(""))
             mFPS = Integer.parseInt(fpsTF.getText());
+        else
+            mFPS = 30;
 
         if (!widthTF.getText().equals(""))
             mWidth = Integer.parseInt(widthTF.getText());
+        else
+            mWidth = -1;
 
         if (!heightTF.getText().equals(""))
             mHeight = Integer.parseInt(heightTF.getText());
+        else mHeight = -1;
 
         if (!titleTF.getText().equals(""))
             mNewTitle = titleTF.getText();
+        else
+            mNewTitle = "output";
 
-        for (File file: mFilesList) {
+        for (File file : mFilesList) {
             try {
-                Runtime runtime = Runtime.getRuntime();
-
                 mPaletteLocation = file.getAbsolutePath().replace(file.getName(), "palette.png");
 
-                /* увы, так не работает */
-                try{
+                try {
                     ProcessBuilder createPaletteBuilder = new ProcessBuilder();
                     createPaletteBuilder.command(
                             converter,
@@ -194,21 +198,17 @@ public class Main extends Application {
                     t.printStackTrace();
                 }
 
-                /* никогда так не делай */
-                // Process createPalette = Runtime.getRuntime().exec("ffmpeg.exe -y -i " + file.getAbsolutePath() + " -vf fps=" + mFPS + ",scale=" + mWidth + ":" + mHeight + ":flags=lanczos,palettegen "  + mPaletteLocation);
-
                 if (mFilesList.size() > 1) {
                     mNewTitle = mNewTitle.concat(String.valueOf(mFilesList.indexOf(file)));
                 }
 
                 File f = new File(file.getAbsolutePath().replace(file.getName(), mNewTitle + ".gif"));
-                if(f.exists() && !f.isDirectory()) {
+                if (f.exists() && !f.isDirectory()) {
                     String time = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH.mm.ss"));
                     mNewTitle = String.format("%s_%s", mNewTitle, time);
                 }
 
-                /* увы, и так тоже не работает */
-                try{
+                try {
                     ProcessBuilder createPaletteBuilder = new ProcessBuilder();
                     createPaletteBuilder.command(
                             converter,
@@ -223,8 +223,6 @@ public class Main extends Application {
                     );
                     Process createGif = createPaletteBuilder.start();
 
-                    /* а так уж и подавно не делай */
-                    // Process createGif = Runtime.getRuntime().exec("ffmpeg.exe -i " + file.getAbsolutePath() + " -i " + mPaletteLocation + " -filter_complex fps=" + mFPS + ",scale=" + mWidth + ":" + mHeight + ":flags=lanczos[x];[x][1:v]paletteuse " + file.getAbsolutePath().replace(file.getName(), mNewTitle + ".gif"));
                     BufferedReader stdError = new BufferedReader(new
                             InputStreamReader(createGif.getErrorStream()));
 
@@ -241,7 +239,7 @@ public class Main extends Application {
 
                     mNewTitle = "output";
                     File palette = new File(mPaletteLocation);
-                    if(palette.delete()) {
+                    if (palette.delete()) {
                         System.out.println(palette.getName() + " was deleted!");
                     } else {
                         System.out.println("Delete operation is failed.");
