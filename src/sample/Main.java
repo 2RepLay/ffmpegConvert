@@ -44,6 +44,8 @@ public class Main extends Application {
 
     private ListView<File> filesListView;
 
+    private Controller controller;
+
     private String converter;
 
     @Override
@@ -59,17 +61,28 @@ public class Main extends Application {
 
         GridPane grid = FXMLLoader.load(getClass().getResource("main.fxml"));
 
-//        GridPane grid = initUI();
+        controller = Controller.getInstance();
 
-        Controller controller = Controller.getInstance();
-        controller.setFPS("12345");
+        bindViews();
 
-
-        primaryStage.setScene(new Scene(grid, 400, 300));
+        primaryStage.setScene(new Scene(grid, 300, 300));
         primaryStage.setTitle("ffmpegConverter");
         initDragEvents(grid);
 
         primaryStage.show();
+    }
+
+    private void bindViews() {
+        fpsTF = controller.getFPS();
+        widthTF = controller.getWidth();
+        heightTF = controller.getHeight();
+        titleTF = controller.getTitle();
+        filesListView = controller.getList();
+
+        Button convert = controller.getSubmitButton();
+        convert.setOnAction(e -> {
+            convertFiles();
+        });
     }
 
     private void initDragEvents(GridPane grid) {
@@ -99,87 +112,8 @@ public class Main extends Application {
         });
     }
 
-    private GridPane initUI() {
-        GridPane grid = new GridPane();
-        grid.setAlignment(Pos.CENTER);
-        grid.setHgap(10);
-        grid.setVgap(10);
-        grid.setPadding(new Insets(25, 25, 25, 25));
-
-        Text sceneTitle = new Text("Drag & Drop .mp4 files here");
-        sceneTitle.setFont(Font.font("Tahoma", FontWeight.NORMAL, 20));
-        grid.add(sceneTitle, 0, 0, 2, 1);
-
-        Label fps = new Label("FPS:");
-        grid.add(fps, 0, 1);
-
-        fpsTF = new TextField();
-        fpsTF.textProperty().addListener((observable, oldValue, newValue) -> {
-            if (!newValue.matches("\\d*")) {
-                fpsTF.setText(newValue.replaceAll("[^\\d]", ""));
-            }
-        });
-        grid.add(fpsTF, 1, 1);
-
-        Label width = new Label("Width:");
-        grid.add(width, 0, 2);
-
-        widthTF = new TextField();
-        widthTF.textProperty().addListener((observable, oldValue, newValue) -> {
-            if (!newValue.matches("\\d*")) {
-                widthTF.setText(newValue.replaceAll("[^\\d]", ""));
-            }
-        });
-        grid.add(widthTF, 1, 2);
-
-        Label height = new Label("Height:");
-        grid.add(height, 0, 3);
-
-        heightTF = new TextField();
-        heightTF.textProperty().addListener((observable, oldValue, newValue) -> {
-            if (!newValue.matches("\\d*")) {
-                heightTF.setText(newValue.replaceAll("[^\\d]", ""));
-            }
-        });
-        grid.add(heightTF, 1, 3);
-
-        Label title = new Label("Title:");
-        grid.add(title, 0, 4);
-
-        titleTF = new TextField();
-        grid.add(titleTF, 1, 4);
-
-        filesListView = new ListView<>();
-        grid.add(filesListView, 0, 5, 2, 2);
-
-        Button convert = new Button("Convert");
-        convert.setOnAction(e -> {
-            convertFiles();
-        });
-        grid.add(convert, 0, 7);
-
-        return grid;
-    }
-
     private void convertFiles() {
-        if (!fpsTF.getText().equals(""))
-            mFPS = Integer.parseInt(fpsTF.getText());
-        else
-            mFPS = 30;
-
-        if (!widthTF.getText().equals(""))
-            mWidth = Integer.parseInt(widthTF.getText());
-        else
-            mWidth = -1;
-
-        if (!heightTF.getText().equals(""))
-            mHeight = Integer.parseInt(heightTF.getText());
-        else mHeight = -1;
-
-        if (!titleTF.getText().equals(""))
-            mNewTitle = titleTF.getText();
-        else
-            mNewTitle = "output";
+        updateVariables();
 
         for (File file : mFilesList) {
             try {
@@ -258,6 +192,27 @@ public class Main extends Application {
                 e.printStackTrace();
             }
         }
+    }
+
+    private void updateVariables() {
+        if (!fpsTF.getText().equals(""))
+            mFPS = Integer.parseInt(fpsTF.getText());
+        else
+            mFPS = 30;
+
+        if (!widthTF.getText().equals(""))
+            mWidth = Integer.parseInt(widthTF.getText());
+        else
+            mWidth = -1;
+
+        if (!heightTF.getText().equals(""))
+            mHeight = Integer.parseInt(heightTF.getText());
+        else mHeight = -1;
+
+        if (!titleTF.getText().equals(""))
+            mNewTitle = titleTF.getText();
+        else
+            mNewTitle = "output";
     }
 
     public static void main(String[] args) {
