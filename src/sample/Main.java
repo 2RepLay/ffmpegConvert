@@ -3,6 +3,7 @@ package sample;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -56,7 +57,13 @@ public class Main extends Application {
             throw new Error("Your OS is not support!!");
         }
 
-        GridPane grid = initUI();
+        GridPane grid = FXMLLoader.load(getClass().getResource("main.fxml"));
+
+//        GridPane grid = initUI();
+
+        Controller controller = Controller.getInstance();
+        controller.setFPS("12345");
+
 
         primaryStage.setScene(new Scene(grid, 400, 300));
         primaryStage.setTitle("ffmpegConverter");

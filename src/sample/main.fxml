@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
+
+<GridPane hgap="10" vgap="10" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.Controller">
+    <padding><Insets bottom="25" left="25" right="25" top="25" /></padding>
+
+    <Text text="Drag &amp; Drop files here" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="0">
+      <font>
+         <Font name="System Font" size="13.0" />
+      </font></Text>
+
+    <Label id="label_fps" text="FPS" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+    <TextField id="field_fps" fx:id="mFPS" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+
+    <Label id="label_width" text="Width" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+    <TextField id="field_width" fx:id="mWidth" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+
+    <Label id="label_height" text="Height" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+    <TextField id="field_height" fx:id="mHeight" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+
+    <Label id="label_title" text="New Title" GridPane.columnIndex="0" GridPane.rowIndex="4" />
+    <TextField id="field_title" fx:id="mTitle" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+
+</GridPane>
