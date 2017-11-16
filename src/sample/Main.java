@@ -50,14 +50,7 @@ public class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        String OS = System.getProperty("os.name").toLowerCase();
-        if (OS.contains("win")) {
-            converter = "ffmpeg.exe";
-        } else if (OS.contains("mac")) {
-            converter = "./ffmpeg";
-        } else {
-            throw new Error("Your OS is not support!!");
-        }
+        prepareFFmpeg();
 
         GridPane grid = FXMLLoader.load(getClass().getResource("main.fxml"));
 
@@ -70,6 +63,47 @@ public class Main extends Application {
         initDragEvents(grid);
 
         primaryStage.show();
+    }
+
+    private boolean isWin = false;
+
+    private void prepareFFmpeg() throws IOException {
+        String OS = System.getProperty("os.name").toLowerCase();
+
+        if (OS.contains("win")) {
+            converter = "ffmpeg.exe";
+            isWin = true;
+        } else if (OS.contains("mac")) {
+            converter = "ffmpeg";
+            isWin = false;
+        } else {
+            throw new Error("Your OS is not support!!");
+        }
+
+        converter = findExecutable(converter);
+    }
+
+    private String findExecutable(String filename) throws IOException {
+        File converterDir = new File(System.getProperty("user.home") + "/ffmpegConverter");
+        converterDir.mkdir();
+
+        File file = new File(converterDir + "/" + filename);
+        file.deleteOnExit();
+
+        InputStream is = getClass().getResource("resources/" + filename).openStream();
+        OutputStream os = new FileOutputStream(file);
+
+        byte[] b = new byte[2048];
+        int length;
+
+        while ((length = is.read(b)) != -1) {
+            os.write(b, 0, length);
+        }
+
+        is.close();
+        os.close();
+
+        return file.getAbsolutePath();
     }
 
     private void bindViews() {
