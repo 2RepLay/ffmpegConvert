@@ -65,17 +65,13 @@ public class Main extends Application {
         primaryStage.show();
     }
 
-    private boolean isWin = false;
-
     private void prepareFFmpeg() throws IOException {
         String OS = System.getProperty("os.name").toLowerCase();
 
         if (OS.contains("win")) {
             converter = "ffmpeg.exe";
-            isWin = true;
         } else if (OS.contains("mac")) {
             converter = "ffmpeg";
-            isWin = false;
         } else {
             throw new Error("Your OS is not support!!");
         }
@@ -85,7 +81,8 @@ public class Main extends Application {
 
     private String findExecutable(String filename) throws IOException {
         File converterDir = new File(System.getProperty("user.home") + "/ffmpegConverter");
-        converterDir.mkdir();
+             converterDir.mkdir();
+             converterDir.deleteOnExit();
 
         File file = new File(converterDir + "/" + filename);
         file.deleteOnExit();
