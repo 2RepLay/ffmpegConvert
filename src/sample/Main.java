@@ -77,6 +77,10 @@ public class Main extends Application {
         }
 
         converter = findExecutable(converter);
+
+        if (OS.contains("mac")) {
+            Runtime.getRuntime().exec("chmod +x " + converter);
+        }
     }
 
     private String findExecutable(String filename) throws IOException {
