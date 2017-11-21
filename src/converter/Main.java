@@ -1,23 +1,21 @@
-package sample;
+package converter;
 
+import converter.controller.MainScreenController;
+import converter.view.FileListCell;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.GridPane;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
-import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import javafx.util.Callback;
 
 import java.io.*;
 import java.time.LocalDateTime;
@@ -26,6 +24,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Main extends Application {
+    private static Main context;
+
     private int result_code;
 
     private int mFPS = 30;
@@ -44,17 +44,23 @@ public class Main extends Application {
 
     private ListView<File> filesListView;
 
-    private Controller controller;
+    private MainScreenController controller;
 
     private String converter;
 
+    public static Main getContext() {
+        return context;
+    }
+
     @Override
     public void start(Stage primaryStage) throws Exception {
+        context = this;
+
         prepareFFmpeg();
 
-        GridPane grid = FXMLLoader.load(getClass().getResource("main.fxml"));
+        GridPane grid = FXMLLoader.load(getClass().getResource("fxml/main.fxml"));
 
-        controller = Controller.getInstance();
+        controller = MainScreenController.getInstance();
 
         bindViews();
 
@@ -113,6 +119,12 @@ public class Main extends Application {
         heightTF = controller.getHeight();
         titleTF = controller.getTitle();
         filesListView = controller.getList();
+        filesListView.setCellFactory(new Callback<ListView<File>, ListCell<File>>() {
+            @Override
+            public ListCell<File> call(ListView<File> param) {
+                return new FileListCell();
+            }
+        });
 
         Button convert = controller.getSubmitButton();
         convert.setOnAction(e -> {
@@ -252,5 +264,16 @@ public class Main extends Application {
 
     public static void main(String[] args) {
         launch(args);
+    }
+
+    public static void removeFile(File file) {
+        System.out.println("Remove: " + file.getName() + ", size: " + getContext().mFilesList.size());
+
+        getContext().mFilesList.remove(file);
+
+        ObservableList<File> items = FXCollections.observableArrayList(getContext().mFilesList);
+        getContext().filesListView.setItems(items);
+
+        System.out.println("New size: " + getContext().mFilesList.size());
     }
 }

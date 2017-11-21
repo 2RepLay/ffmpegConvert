@@ -1,4 +1,4 @@
-package sample;
+package converter.controller;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -10,18 +10,25 @@ import javafx.scene.text.Text;
 
 import java.io.File;
 
-public class Controller {
-    private static Controller instance;
+public class MainScreenController {
+    private static MainScreenController instance;
 
-    @FXML private Text header;
-    @FXML private TextField mFPS;
-    @FXML private TextField mWidth;
-    @FXML private TextField mHeight;
-    @FXML private TextField mTitle;
-    @FXML private Button mSubmitButton;
-    @FXML private ListView<File> mList;
+    @FXML
+    private Text header;
+    @FXML
+    private TextField mFPS;
+    @FXML
+    private TextField mWidth;
+    @FXML
+    private TextField mHeight;
+    @FXML
+    private TextField mTitle;
+    @FXML
+    private Button mSubmitButton;
+    @FXML
+    private ListView<File> mList;
 
-    public Controller() {
+    public MainScreenController() {
 
     }
 
@@ -49,31 +56,31 @@ public class Controller {
         });
     }
 
-    static Controller getInstance() {
+    public static MainScreenController getInstance() {
         return instance;
     }
 
-    TextField getFPS() {
+    public TextField getFPS() {
         return mFPS;
     }
 
-    TextField getWidth() {
+    public TextField getWidth() {
         return mWidth;
     }
 
-    TextField getHeight() {
+    public TextField getHeight() {
         return mHeight;
     }
 
-    TextField getTitle() {
+    public TextField getTitle() {
         return mTitle;
     }
 
-    Button getSubmitButton() {
+    public Button getSubmitButton() {
         return mSubmitButton;
     }
 
-    ListView<File> getList() {
+    public ListView<File> getList() {
         return mList;
     }
 }
